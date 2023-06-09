@@ -6,6 +6,8 @@ abstract: |
 output:
   html_document:
     df_print: paged
+    
+    # 19080760
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache = FALSE, echo = TRUE, message = FALSE, warning = FALSE)
@@ -16,7 +18,7 @@ knitr::opts_chunk$set(cache = FALSE, echo = TRUE, message = FALSE, warning = FAL
 <!-- ======================================================================= -->
 <!-- ============================== NOTLAR ================================= -->
 <!-- ======================================================================= -->
-[^1]: Öğrenci Numarası, [Github Repo](https://github.com/ahmetokankarasu/finalodevi)
+[^1]: Öğrenci Numarası, [Github Repo](https://github.com/ahmetokankarasu/Final_Odevi)
 
 ```{r, echo=FALSE}
 
@@ -60,9 +62,7 @@ st_options(lang = "tr")
 <!-- Analize ait R kodları bu bölümde başlamalıdır. Bu bölümde veri setini R'a aktaran ve özet istatistikleri üreten kodlar yer almalıdır. -->
 
 <!-- Rmd dosyasında kod bloklarının bazılarında kod seçeneklerinin düzenlendiğine dikkat edin.  -->
-  Bu çalışma kapsamında kullanılan veriler, International Labour Organization  (https://ilostat.ilo.org/data/#) bünyesinde bulunan veritabanını kullanılarak eldeedilmiştir. İlgili veritabanı bünyesinde 120'den fazla ülkeye ait, iş gücü, işsizlik ile alakalı verileri bünyesinde bulundurmaktadır. Çalışmanın daha kapsamlı olması amacıyla, cinsiyet, yaş aralığı ve egitim düzeylerine bilgilerini içeren altı farklı veriseti indirilmiştir. İlgili veri setleri, 188 ülke ve 2011-2022 tarihleri arasında olmak üzere 12 seneye ait ülkelerin, iş gücü, işsiz sayısı, işsizlik oranı, cesareti kırılan iş arayanlar  miktarını vb. değeleri içermektedir.
-
-  
+  Bu çalışma kapsamında kullanılan veriler, International Labour Organization  (https://ilostat.ilo.org/data/#) bünyesinde bulunan veritabanını kullanılarak eldeedilmiştir. İlgili veritabanı bünyesinde 120'den fazla ülkeye ait, iş gücü, işsizlik ile alakalı verileri bünyesinde bulundurmaktadır. Çalışmanın daha kapsamlı olması amacıyla, cinsiyet, yaş aralığı ve egitim düzeylerine bilgilerini içeren altı farklı veriseti indirilmiştir. İlgili veri setleri, 188 ülke ve 2011-2022 tarihleri arasında olmak üzere 12 seneye ait ülkelerin, iş gücü, işsiz sayısı, işsizlik oranı, cesareti kırılan iş arayanlar miktarını vb. değeleri içermektedir.
 
 ```{r, echo=FALSE}
 # Exceldeki verilerin R içerisine aktarılması
@@ -97,9 +97,8 @@ Data_Ue <- read_excel("../data/Data.xlsx", sheet = "Unemployment",
 
 
 ```
-
-Örnek bir veriseti
-```{r, echo=TRUE}
+İndirilen verisetlerini analizlere uygun hale getirmek amacıyla tidyr kütüphanesinde bulunan **gather** fonksiyonundan faydalanılmıştır. Örnek bir verisetinin dönüşümden önceki hali : 
+```{r, echo=FALSE}
 head(Data_LF)
 ```
 
@@ -144,7 +143,8 @@ Data_Ue$Merge_ID <- apply(Data_Ue[ , c("Reference area", "Sex", "Age", "Time", "
 
 ```
 
-```{r, echo=TRUE}
+Dönüşümden sonra verisetleri 25 bin ile 75000 arasında değişen satır sayılarına sahip olmuştur. Bu verisetleri arasındaki bağlantıyı sağlamak amacıyla  da ülke, zaman, yaş aralığı, eğitim durumlarını içeren bir id verilmiştir. Dönüşümden sonraki örnek bir veriseti:
+```{r, echo=FALSE}
 head(Data_LF)
 ```
 
@@ -172,6 +172,8 @@ Data_Final  <- Data_Final[ , !(colnames(Data_Final) %in%  c("merge_id", "source"
 
 ```
 
+Dönüşüm sonrasında, clean_names  fonksiyonu ile kolonlar yeniden isimlendirilmiş ve kontrol amaçlı bulunan gereksiz kolonlarda verinin son halinden çıkartılmıştır. Ayrıca analizlere uygun hale getirilmesi için, zaman olarak 2014-2022 arası ve veri bilgisi en fazla olan 40 ülke olacak şekilde filtreleme yapılmıştır. Bunun nedeni bazı ülkelere ait verilerin kısıtlı olmasıdır.
+
 ```{r, echo=FALSE}
 # veri içerisindei eksik değerli (NA) ve bazı satırların filtelenmesi
 
@@ -192,7 +194,7 @@ rm(Data_DJ, Data_E,  Data_LF, Data_Ue, Data_UeR, Data_WP, Countries, k)
 
 ```
 
-
+Son olarak analizler için kategorik değişken olan ülke, cinsiyet gibi bilgilere ek olarak zaman bilgisi de faktör formatına çevrilmiştir. Çünkü numerik haldeki zaman bilgisinde covid öncesi ve sonrasındaki işsizliğe etkisini tespit edilmesi zordur. Son olarak numerik olan değerlerin logaritma 10 tabanına çevrilmesi yapılmıştır. Bunun nedeni bazı ülkelerin nufüslarından dolayı sayısal olarak karşılaştırmak zor ve uygun değildir. Bu nedenle log10 tabanında dönüşüm yapılarak uygun hale getirilmiştir. 
 ```{r, echo=FALSE}
 # kategorik ve numeric değerli kolonların dönüşümlerinin yapılması. Aynı zamanda numeric olan kolonların log10 tabanına çevrilmesi
 
@@ -202,62 +204,57 @@ Data_Final$age <- as.factor(Data_Final$age)
 Data_Final$time <- as.factor(Data_Final$time)
 Data_Final$edu_level <- as.factor(Data_Final$edu_level)
 
-
 Col_Name <- c("labour_force", "working_age_population", "employment", "discouraged_jobseekers", "unemployment")
 Data_Final[ , Col_Name] <- log10((Data_Final[ , Col_Name] *1000)+10)
 
-
-
 ```
 
-```{r, echo=FALSE}
+Sonuç olarak 6061 satırdan ve 11 kolondan oluşan bir veriseti elde edilmiştir. Verinin son halinin özet bilgisi ise skim_without_charts ile aşağıda gösterildiği gibidir.
+```{r, echo=TRUE}
 # 
 skimr::skim_without_charts(Data_Final)
 
 ```
 
-```{r, echo=FALSE}
-# 
-glimpse(Data_Final)
-
-```
 
 
-```{r, echo=FALSE}
-# 
-summary(Data_Final)
-```
+# Yöntem ve Veri Analizi
 
+  Çoklu kategorik bir veriye sahip olduğumuz için ikili karşılaştırma testleri yetersiz kalmaktadır. Bu nedenle aynı anda birden çok özelliği görebileceğimiz türde grafiklerle veya birden fazla değişkeni analiz edebileceğimiz regresyon gibi analizler kullanmamız gerekmektedir. Bu amaçla ggplot kütüphanesini kullanarak farklı açılardan veriye ait kutu grafikleri elde edilmiştir. 
 
-
-
-
-```{r, echo=FALSE}
-#
-# Add notched box plot
-ggplot(Data_Final, aes(x=unemployment, y=reference_area)) +
+```{r plot1, fig.align='center', fig.cap='Ulkelere baglı olarak işsizlik değerlerini kutu grafigi gosterimi'}
+ggplot(Data_Final, aes(x=unemployment_rate, y=reference_area)) +
   geom_boxplot(notch = TRUE)
-  # +geom_jitter(aes(colour =sex) , position=position_jitter(0.2))
+```
 
 
+```{r}
 Data_Final  %>% group_by(reference_area)  %>%
   summarise(Avg=mean(unemployment_rate), Std=sd(unemployment_rate))
+```
 
+Aşağıdaki grafiğe göre her iki cinsiyet içinde işsizlik değerleri 2019 sonrasında ani bir kırılma görülmektedir. Bunun nedeni, firmaların iş gücü ihtiyacının değişmesi veya iş kültüründeki değişime bağlı (**uzaktan veya hibrit tarza geçiş**) bağlı durumlar olabilir. Ayrıca işsizlik değerlerinde kadın-erkek arasında ufak farklarda görülmektedir.
 
-
-
-ggplot(Data_Final, aes(x=unemployment, y=sex, fill =time)) +
+```{r plot2, fig.align='center', fig.cap='Zaman ve cinsiyete gore issizlik degerlerinin kutu grafigi gosterimi'}
+ggplot(Data_Final, aes(x=unemployment_rate, y=sex, fill =time)) +
   geom_boxplot(notch = TRUE)
+```
 
-
+```{r}
 Data_Final  %>% group_by(sex, time)  %>%
   summarise(Avg=mean(unemployment_rate), Std=sd(unemployment_rate))
+```
 
-
-
-ggplot(Data_Final, aes(x=unemployment, y=sex, fill =edu_level)) +
+Eğitim düzeyleri açısından ise yüksek düzeydekilerin, orta seviyeye göre daha azdır.  
+```{r plot3, fig.align='center', fig.cap='Egitim seviyesi ve cinsiyete gore issizlik degerlerinin kutu grafigi gosterimi'}
+ggplot(Data_Final, aes(x=unemployment_rate, y=sex, fill =edu_level)) +
   geom_boxplot(notch = TRUE)
+```
 
+Yukarıdaki garfiklerde görüldüğü gibi işsizlik oranı değişkeninin kategorik değişkenlerle ilişkileri var gibi görülmektedir. Ama görsel çıktılar herzaman istatistiksel olarak anlamlı olmayabilmektedir. Bu nedenle çoklu doğrusal resresyon analizi ile bu ilişkiyi daha doğru olarak tespit edibiliriz. Bu amaçla öncelikle bağımlı değişken olarak kullanılacak işsizliik oranının diğer numerik değişkenlerle corelasyon ilişkisinin analiz edilmesi uygundur. Bu işlem için chart.Correlation fonksiyonu ile hem görsel hemde değer olarak aşağıdaki grafik elde edilmiştir. Ayrıca bu amaçla kullanılarak olan numerik değişkenlere ait dağılım istatistikleri de hesaplanmıştır.
+
+
+```{r, echo=TRUE}
 
 library(PerformanceAnalytics)
 
@@ -267,9 +264,24 @@ chart.Correlation(Data_Final[ , c("labour_force", "working_age_population", "emp
 descr(Data_Final, style = 'rmarkdown')
 
 ```
+Sonuçlara göre regresyon analizde aşağıdaki formülasyona göre doğrusal regresyon analizi yapılmıştır.
 
+$$
+unEmploymentrate = \beta_0 + 
+\beta_1 * ReferenceArea + 
+\beta_2 * Sex + 
+\beta_3 * Age + 
+\beta_4 * Time + 
+\beta_5 * Edu Level + 
+\beta_6 * labour force + 
+\beta_7 * Working Pop + 
+\beta_8 * employment + 
+\beta_9 * discouraged jobseekers + 
 
-```{r, echo=FALSE}
++ \varepsilon_t
+$$
+
+```{r, echo=TRUE}
 # sadece anlamlı olanları koy
 
 
@@ -284,40 +296,8 @@ summary(score_mod)
 
 ```
 
-```{r, echo=FALSE}
-#
-
-
-
-
-```
-
-
-
-# Yöntem ve Veri Analizi
-Bu bölümde veri setindeki bilgileri kullanarak çalışmanın amacına ulaşmak için kullanılacak yöntemleri açıklayın. Derste işlenen/işlenecek olan analiz yöntemlerinden (Hipotez testleri ve korelasyon analizi gibi) çalışmanın amacına ve veri setine uygun olanlar bu bölümde kullanılmalıdır. [@newbold:2003; @ozsoy:2010; @ozsoy:2014]
-
-Örneğin, regresyon analizi gerçekleştiriyorsanız tahmin ettiğiniz denklemi bu bölümde tartışınız. Denklemlerinizi ve matematiksel ifadeleri $LaTeX$ kullanarak yazınız.
-
-$$
-Y_t = \beta_0 + \beta_N N_t + \beta_P P_t + \beta_I I_t + \varepsilon_t
-$$
-
-Bu bölümde analize ilişkin farklı tablolar ve grafiklere yer verilmelidir. Çalışmanıza uygun biçimde histogram, nokta grafiği (Şekil \@ref(fig:plot) gibi), kutu grafiği, vb. grafikleri bu bölüme ekleyiniz. Şekillerinize de gerekli göndermeleri bir önceki cümlede gösterildiği gibi yapınız.
-
-
-```{r plot, fig.align='center', fig.cap='Muhteşem Bir Grafik'}
-ggplot(Data_Final, aes(x=unemployment, y=sex, fill =edu_level)) +
-  geom_boxplot(notch = TRUE)
-```
-
-
 # Sonuç
-Bu bölümde çalışmanızın sonuçlarını özetleyiniz. Sonuçlarınızın başlangıçta belirlediğiniz araştırma sorusuna ne derece cevap verdiğini ve ileride bu çalışmanın nasıl geliştirilebileceğini tartışınız.
-
-**Kaynakça bölümü Rmarkdown tarafından otomatik olarak oluşturulmaktadır. Taslak dosyada Kaynakça kısmında herhangi bir değişikliğe gerek yoktur.** 
-
-**_Taslakta bu cümleden sonra yer alan hiçbir şey silinmemelidir._**
+Sonuç olarak, bazı ülkelere bağlı olarak işsizlik oranları yüksek iken  (**örneğin Türkiye'de olmak**) bazılarında daha düşük olmasını neden olmaktadır. Cinsiyetin etkisi tam olarak anlamlı olmasa da kadınlara göre erkeklerin daha az işsiz olduğu sonucu çıkmaktadır. Sene bazlı ise bazı senelerde anlamlı olarak daha az işsizlik oranına sahiptir. Göreceli olarak da farklılık göstermektedir. Diğer değişkenlerde de anlamlı sonuçlar çıkmaktadır. Bu sonuçlar doğrultusunda işsizlik oranı birden çok değişkenden etkilenen bir olaydır. Bu süreçte iyileştirmeler için bunların de göz önüne alınması gerekmektedir.
 
 \newpage
 # Kaynakça {#references}
