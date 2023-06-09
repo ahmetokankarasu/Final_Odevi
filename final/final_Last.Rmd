@@ -1,0 +1,325 @@
+---
+title: "Çalışmanızın Başlığı"
+author: "Ahmet Okan Karasu[^1]"
+abstract: |
+  Bu bölümde çalışmanızın özetini yazınız.
+output:
+  html_document:
+    df_print: paged
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = FALSE, echo = TRUE, message = FALSE, warning = FALSE)
+# tinytex::install_tinytex(TRUE) 
+# tinytex:::is_tinytex()
+```
+
+<!-- ======================================================================= -->
+<!-- ============================== NOTLAR ================================= -->
+<!-- ======================================================================= -->
+[^1]: Öğrenci Numarası, [Github Repo](https://github.com/ahmetokankarasu/finalodevi)
+
+```{r, echo=FALSE}
+
+rm(list=ls()); cat("\14")
+# Gerekli kütüphanelerin aktif edilmesi
+library(here)
+library(readxl)
+library(tidyr)
+library(glmnet)
+library(readxl)
+library(ggplot2)
+library(markdown)
+library("PerformanceAnalytics")
+library(dplyr)
+library(skimr)
+library(summarytools)
+library(xtable)
+library(summarytools)
+st_options(lang = "tr")
+```
+
+
+# ÖZET
+
+
+**   **
+
+# Giriş
+  İşsizlik ve buna bağlı olarak yaşanan ekonomik dengesizlik çoğu ülke için sorunlu konulardan birisidir. Bu sorunun nedenleri, ülkelere veya zamanın şartlarına gelişen ekonomik sorunlar veya farklı krizler olabilir. Bunlar haricinde ülkenin sosyo-demografik durumu da bazı grupların iş bulamama sorunlarına neden olabilmektedir. Örneğin; bazı  doğu toplumlarında kadınların işe katılımı önyargılardan dolayı daha azdır. Ek olarak kişinin, yeterli birkime sahip olmaması veya iş arama sürecindeki negatif deneyimler de işsizliğin fark artmasındaki psikolojik nedenlerdendir.
+
+## Çalışmanın Amacı
+<!-- **Bu bölümde yaptığınız çalışmanın amacından ve öneminden birkaç paragraf ile bahsediniz.** -->
+
+  Bu çalışma kapsamında seçilen bazı ülkeler baz alınarak cinsiyet, iş yetenekleri, zamansal değişim gibi faktörler dikkate alınarak işsizliğe etki eden faktörlerin etkileri araştırılmıştır. İşsizliğe etki eden faktörlerin tespiti (**eğer uygun önlemler alındığı sürece**) ülkenin ekonomik dengesinin korunması ve buna bağlı olarak bireylerinde daha huzurlu bir hayat sürmesinde önemlidir. Bireylere uygun şartların sağlanmadı durumlarda, yeni girişimler veya yatırımların ilgili ülkelere yapılması da azalmaktadır. Bu nedenle ülkelerin kendi işsizlik sorunlarını anlayıp, bunlara uygun çözümler üretmesi uzun vadeli olarak gelişmelerini sağlar.
+
+## Literatür 
+
+# Veri 
+<!-- Bu bölümde çalışmanızda kullandığınız veri setinin kaynağını, ham veri üzerinde herhangi bir işlem yaptıysanız bu işlemleri ve veri seti ile ilgili özet istatistikleri tartışınız. Bu bölümde tüm değişkenlere ait özet istatistikleri (ortalama, standart sapma, minimum, maksimum, vb. değerleri) içeren bir tablo (Tablo \ref{tab:ozet}) olması zorunludur. Tablolarınıza gerekli göndermeleri bir önceki cümlede gösterildiği gibi yapınız. [@perkins:1991] -->
+
+<!-- Analize ait R kodları bu bölümde başlamalıdır. Bu bölümde veri setini R'a aktaran ve özet istatistikleri üreten kodlar yer almalıdır. -->
+
+<!-- Rmd dosyasında kod bloklarının bazılarında kod seçeneklerinin düzenlendiğine dikkat edin.  -->
+  Bu çalışma kapsamında kullanılan veriler, International Labour Organization  (https://ilostat.ilo.org/data/#) bünyesinde bulunan veritabanını kullanılarak eldeedilmiştir. İlgili veritabanı bünyesinde 120'den fazla ülkeye ait, iş gücü, işsizlik ile alakalı verileri bünyesinde bulundurmaktadır. Çalışmanın daha kapsamlı olması amacıyla, cinsiyet, yaş aralığı ve egitim düzeylerine bilgilerini içeren altı farklı veriseti indirilmiştir. İlgili veri setleri, 188 ülke ve 2011-2022 tarihleri arasında olmak üzere 12 seneye ait ülkelerin, iş gücü, işsiz sayısı, işsizlik oranı, cesareti kırılan iş arayanlar  miktarını vb. değeleri içermektedir.
+
+  
+
+```{r, echo=FALSE}
+# Exceldeki verilerin R içerisine aktarılması
+
+Col_Name <- c("Reference area", "Source", "Sex", "Age", "Time",
+              "Total", "Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")
+
+Data_LF <- read_excel("../data/Data.xlsx", sheet = "Labour force",
+                      col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "text", "text", "text", "text", "text")
+                      )[ , Col_Name]
+
+Data_WP <- read_excel("../data/Data.xlsx", sheet = "Working-age population",
+                      col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "text", "text", "text", "text", "text")
+                      )[ , Col_Name]
+
+Data_E <- read_excel("../data/Data.xlsx", sheet = "Employment",
+                     col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "text", "text", "text", "text", "text")
+                    )[ , Col_Name]
+
+Data_DJ <- read_excel("../data/Data.xlsx", sheet = "Discouraged jobseekers",
+                      col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "text", "text", "text", "text", "text")
+                    )[ , Col_Name]
+
+Data_UeR <- read_excel("../data/Data.xlsx", sheet = "Unemployment rate",
+                       col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "text", "text", "text", "text", "text")
+                      )[ , Col_Name]
+
+Data_Ue <- read_excel("../data/Data.xlsx", sheet = "Unemployment",
+                      col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "text", "text", "text", "text", "text")
+                      )[ , Col_Name]
+
+
+
+```
+
+Örnek bir veriseti
+```{r, echo=TRUE}
+head(Data_LF)
+```
+
+
+```{r, echo=FALSE}
+# Verilerin gather fonksiyonu ile eğitim seviyelerine göre bilgilerin tek tek kolonlara dönüştürülmesi. Ayrıca Farklı tabloları bilgileriyle birleştirmek amacıyla unique bir id oluşturulmasu
+
+Data_LF <- Data_LF %>%
+  gather("Edu Level", "Labour force", c("Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")) %>%
+rename("Total LF" = Total)
+Data_LF$Merge_ID <- apply(Data_LF[ , c("Reference area", "Sex", "Age", "Time", "Edu Level")], 1, function(x) paste0(x, collapse =""))
+
+Data_WP <- Data_WP %>%
+  gather("Edu Level", "Working-age population", c("Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")) %>%
+  rename("Total WP" = Total)
+Data_WP$Merge_ID <- apply(Data_WP[ , c("Reference area", "Sex", "Age", "Time", "Edu Level")], 1, function(x) paste0(x, collapse =""))
+
+
+Data_E <- Data_E %>%
+  gather("Edu Level", "Employment", c("Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")) %>%
+  rename("Total E" = Total)
+Data_E$Merge_ID <- apply(Data_E[ , c("Reference area", "Sex", "Age", "Time", "Edu Level")], 1, function(x) paste0(x, collapse =""))
+
+
+Data_DJ <- Data_DJ %>%
+  gather("Edu Level", "Discouraged jobseekers", c("Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")) %>%
+  rename("Total DJ" = Total)
+Data_DJ$Merge_ID <- apply(Data_DJ[ , c("Reference area", "Sex", "Age", "Time", "Edu Level")], 1, function(x) paste0(x, collapse =""))
+
+
+Data_UeR <- Data_UeR %>%
+  gather("Edu Level", "Unemployment rate", c("Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")) %>%
+  rename("Total UeR" = Total)
+Data_UeR$Merge_ID <- apply(Data_UeR[ , c("Reference area", "Sex", "Age", "Time", "Edu Level")], 1, function(x) paste0(x, collapse =""))
+
+
+Data_Ue <- Data_Ue %>%
+  gather("Edu Level", "Unemployment", c("Less than basic", "Basic", "Intermediate", "Advanced", "Level not stated")) %>%
+  rename("Total Ue" = Total)
+Data_Ue$Merge_ID <- apply(Data_Ue[ , c("Reference area", "Sex", "Age", "Time", "Edu Level")], 1, function(x) paste0(x, collapse =""))
+
+
+```
+
+```{r, echo=TRUE}
+head(Data_LF)
+```
+
+```{r, echo=FALSE}
+# Anahtar ile farklı tabloların tek tablo haline getirilmesi
+
+Data_Final <- merge(Data_LF, Data_WP[ , !(colnames(Data_WP) %in% c("Reference area", "Source", "Sex", "Age", "Time", "Edu Level"))], by="Merge_ID")
+
+Data_Final <- merge(Data_Final, Data_E[ , !(colnames(Data_WP) %in% c("Reference area", "Source", "Sex", "Age", "Time", "Edu Level"))], by="Merge_ID")
+Data_Final <- merge(Data_Final, Data_DJ[ , !(colnames(Data_WP) %in% c("Reference area", "Source", "Sex", "Age", "Time", "Edu Level"))], by="Merge_ID")
+Data_Final <- merge(Data_Final, Data_UeR[ , !(colnames(Data_WP) %in% c("Reference area", "Source", "Sex", "Age", "Time", "Edu Level"))], by="Merge_ID")
+Data_Final <- merge(Data_Final, Data_Ue[ , !(colnames(Data_WP) %in% c("Reference area", "Source", "Sex", "Age", "Time", "Edu Level"))], by="Merge_ID")
+
+```
+
+
+
+```{r, echo=FALSE}
+# Kolon isimlerinin düzeltilmesi ve bazı kolonların sonveriden çıkartılması
+Data_Final <- Data_Final %>%
+  janitor::clean_names()
+
+k <- grep(pattern = "total", x= colnames(Data_Final))
+Data_Final  <- Data_Final[ , !(colnames(Data_Final) %in%  c("merge_id", "source", colnames(Data_Final)[k]) ) ]
+
+```
+
+```{r, echo=FALSE}
+# veri içerisindei eksik değerli (NA) ve bazı satırların filtelenmesi
+
+Countries <- sort(table(Data_Final$reference_area),  decreasing = TRUE)
+Countries <- Countries[Countries>=350]
+# print(Countries)
+
+
+Data_Final  <- Data_Final  %>%
+              filter(sex != "Total") %>%
+              filter( (time >= 2014 ) & (time <= 2022 ) ) %>%
+              filter( reference_area %in% names(Countries) ) %>%
+              na.omit() %>%
+              mutate( across(labour_force:unemployment, as.numeric) )
+
+rm(Data_DJ, Data_E,  Data_LF, Data_Ue, Data_UeR, Data_WP, Countries, k)
+
+
+```
+
+
+```{r, echo=FALSE}
+# kategorik ve numeric değerli kolonların dönüşümlerinin yapılması. Aynı zamanda numeric olan kolonların log10 tabanına çevrilmesi
+
+Data_Final$reference_area <- as.factor(Data_Final$reference_area)
+Data_Final$sex <- as.factor(Data_Final$sex)
+Data_Final$age <- as.factor(Data_Final$age)
+Data_Final$time <- as.factor(Data_Final$time)
+Data_Final$edu_level <- as.factor(Data_Final$edu_level)
+
+
+Col_Name <- c("labour_force", "working_age_population", "employment", "discouraged_jobseekers", "unemployment")
+Data_Final[ , Col_Name] <- log10((Data_Final[ , Col_Name] *1000)+10)
+
+
+
+```
+
+```{r, echo=FALSE}
+# 
+skimr::skim_without_charts(Data_Final)
+
+```
+
+```{r, echo=FALSE}
+# 
+glimpse(Data_Final)
+
+```
+
+
+```{r, echo=FALSE}
+# 
+summary(Data_Final)
+```
+
+
+
+
+
+```{r, echo=FALSE}
+#
+# Add notched box plot
+ggplot(Data_Final, aes(x=unemployment, y=reference_area)) +
+  geom_boxplot(notch = TRUE)
+  # +geom_jitter(aes(colour =sex) , position=position_jitter(0.2))
+
+
+Data_Final  %>% group_by(reference_area)  %>%
+  summarise(Avg=mean(unemployment_rate), Std=sd(unemployment_rate))
+
+
+
+
+ggplot(Data_Final, aes(x=unemployment, y=sex, fill =time)) +
+  geom_boxplot(notch = TRUE)
+
+
+Data_Final  %>% group_by(sex, time)  %>%
+  summarise(Avg=mean(unemployment_rate), Std=sd(unemployment_rate))
+
+
+
+ggplot(Data_Final, aes(x=unemployment, y=sex, fill =edu_level)) +
+  geom_boxplot(notch = TRUE)
+
+
+library(PerformanceAnalytics)
+
+chart.Correlation(Data_Final[ , c("labour_force", "working_age_population", "employment", "discouraged_jobseekers", "unemployment_rate", "unemployment")], histogram = TRUE, method = "pearson")
+
+
+descr(Data_Final, style = 'rmarkdown')
+
+```
+
+
+```{r, echo=FALSE}
+# sadece anlamlı olanları koy
+
+
+Formula <- as.formula(unemployment_rate ~ reference_area + sex + age + time + edu_level + labour_force + working_age_population + employment + discouraged_jobseekers)
+score_mod <- lm(Formula, data = Data_Final)
+
+summary(score_mod)
+
+
+# generics::tidy(score_mod)
+
+
+```
+
+```{r, echo=FALSE}
+#
+
+
+
+
+```
+
+
+
+# Yöntem ve Veri Analizi
+Bu bölümde veri setindeki bilgileri kullanarak çalışmanın amacına ulaşmak için kullanılacak yöntemleri açıklayın. Derste işlenen/işlenecek olan analiz yöntemlerinden (Hipotez testleri ve korelasyon analizi gibi) çalışmanın amacına ve veri setine uygun olanlar bu bölümde kullanılmalıdır. [@newbold:2003; @ozsoy:2010; @ozsoy:2014]
+
+Örneğin, regresyon analizi gerçekleştiriyorsanız tahmin ettiğiniz denklemi bu bölümde tartışınız. Denklemlerinizi ve matematiksel ifadeleri $LaTeX$ kullanarak yazınız.
+
+$$
+Y_t = \beta_0 + \beta_N N_t + \beta_P P_t + \beta_I I_t + \varepsilon_t
+$$
+
+Bu bölümde analize ilişkin farklı tablolar ve grafiklere yer verilmelidir. Çalışmanıza uygun biçimde histogram, nokta grafiği (Şekil \@ref(fig:plot) gibi), kutu grafiği, vb. grafikleri bu bölüme ekleyiniz. Şekillerinize de gerekli göndermeleri bir önceki cümlede gösterildiği gibi yapınız.
+
+
+```{r plot, fig.align='center', fig.cap='Muhteşem Bir Grafik'}
+ggplot(Data_Final, aes(x=unemployment, y=sex, fill =edu_level)) +
+  geom_boxplot(notch = TRUE)
+```
+
+
+# Sonuç
+Bu bölümde çalışmanızın sonuçlarını özetleyiniz. Sonuçlarınızın başlangıçta belirlediğiniz araştırma sorusuna ne derece cevap verdiğini ve ileride bu çalışmanın nasıl geliştirilebileceğini tartışınız.
+
+**Kaynakça bölümü Rmarkdown tarafından otomatik olarak oluşturulmaktadır. Taslak dosyada Kaynakça kısmında herhangi bir değişikliğe gerek yoktur.** 
+
+**_Taslakta bu cümleden sonra yer alan hiçbir şey silinmemelidir._**
+
+\newpage
+# Kaynakça {#references}
+<div id="refs"></div>
+
